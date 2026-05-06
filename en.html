@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapForge — Screenshot & PDF API Without the Puppeteer Headaches</title>
+    <meta name="description" content="Self-hosted screenshot and PDF generation API. No Puppeteer, no headless Chrome drama. Batch processing, webhooks, and beautiful docs.">
+    <style>
+    @font-face { font-family: 'Inter'; src: local('Inter'), local('Arial'); }
+    :root {
+        --bg: #0a0a0f;
+        --surface: #111118;
+        --surface-2: #1a1a24;
+        --border: #2a2a38;
+        --text: #e8e8f0;
+        --text-muted: #8b8ba0;
+        --accent: #6366f1;
+        --accent-light: #818cf8;
+        --accent-glow: rgba(99, 102, 241, 0.3);
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+    .navbar {
+        position: sticky; top: 0; z-index: 100;
+        background: rgba(10, 10, 15, 0.8);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+    }
+    .navbar .container { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .logo { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; }
+    .logo span { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .lang-switch { font-size: 0.8rem; color: var(--text-muted); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; text-decoration: none; }
+    .lang-switch:hover { border-color: var(--accent); color: var(--text); }
+    .hero { padding: 80px 0 60px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before {
+        content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+        width: 800px; height: 800px;
+        background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: var(--surface-2); border: 1px solid var(--border);
+        padding: 6px 14px; border-radius: 999px; font-size: 0.8rem; color: var(--text-muted);
+        margin-bottom: 24px;
+    }
+    .badge .dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 3.2rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 20px; }
+    h1 .gradient { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p.subtitle { font-size: 1.15rem; color: var(--text-muted); max-width: 540px; margin: 0 auto 36px; }
+    .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 14px 28px; border-radius: 10px; font-weight: 600; font-size: 0.95rem;
+        text-decoration: none; border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary { background: var(--gradient); color: white; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(99, 102, 241, 0.5); }
+    .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--accent); }
+    .code-block {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+        padding: 24px; margin: 40px auto; max-width: 640px; text-align: left;
+        font-family: 'JetBrains Mono', 'Consolas', 'Monaco', monospace; font-size: 0.85rem; overflow-x: auto;
+    }
+    .code-block .comment { color: #6a6a80; }
+    .code-block .string { color: #a5d6a7; }
+    .code-block .keyword { color: #ce93d8; }
+    .code-block .func { color: #90caf9; }
+    .features { padding: 60px 0; }
+    .features h2 { text-align: center; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+    .features .sub { text-align: center; color: var(--text-muted); margin-bottom: 48px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+    .card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+        padding: 28px; transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card-icon { font-size: 1.8rem; margin-bottom: 14px; }
+    .card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 8px; }
+    .card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
+    .pricing { padding: 60px 0; }
+    .pricing h2 { text-align: center; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+    .pricing .sub { text-align: center; color: var(--text-muted); margin-bottom: 48px; }
+    .price-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; max-width: 720px; margin: 0 auto; }
+    .price-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 32px; }
+    .price-card.popular { border-color: var(--accent); position: relative; }
+    .price-card.popular::before {
+        content: 'POPULAR'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+        background: var(--gradient); color: white; font-size: 0.7rem; font-weight: 700;
+        padding: 4px 14px; border-radius: 999px;
+    }
+    .price-card .tier { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
+    .price-card .price { font-size: 2.4rem; font-weight: 800; margin-bottom: 20px; }
+    .price-card .price span { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
+    .price-card ul { list-style: none; }
+    .price-card ul li { padding: 6px 0; font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+    .price-card ul li::before { content: '✓'; color: var(--success); font-weight: 700; }
+    .waitlist { padding: 80px 0; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .waitlist h2 { text-align: center; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+    .waitlist .sub { text-align: center; color: var(--text-muted); margin-bottom: 36px; }
+    .form-box { max-width: 480px; margin: 0 auto; }
+    .form-box input, .form-box select {
+        width: 100%; padding: 14px 16px; margin-bottom: 14px;
+        background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+        color: var(--text); font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+    }
+    .form-box input:focus, .form-box select:focus { border-color: var(--accent); }
+    .form-box button { width: 100%; }
+    .success-msg { display: none; text-align: center; padding: 20px; color: var(--success); font-weight: 600; }
+    .stats { text-align: center; margin-top: 24px; color: var(--text-muted); font-size: 0.85rem; }
+    .stats span { color: var(--accent-light); font-weight: 700; }
+    footer { padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+    footer a { color: var(--accent-light); text-decoration: none; }
+    @media (max-width: 640px) {
+        h1 { font-size: 2.2rem; }
+        .hero { padding: 60px 0 40px; }
+        .nav-links a:not(.lang-switch) { display: none; }
+    }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="container">
+        <div class="logo">Snap<span>Forge</span></div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#waitlist">Waitlist</a>
+            <a href="?lang=ru" class="lang-switch">RU</a>
+        </div>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="container">
+        <div class="badge"><span class="dot"></span> Self-hosted & Hosted SaaS</div>
+        <h1>Screenshot & PDF API<br><span class="gradient">Without Puppeteer Headaches</span></h1>
+        <p class="subtitle">Batch screenshots, async PDF generation, webhooks on completion. Zero Chrome RAM abuse. Built for developers who ship.</p>
+        <div class="cta-row">
+            <a href="#waitlist" class="btn btn-primary">Join Waitlist — Free Early Access</a>
+            <a href="#features" class="btn btn-secondary">See Features</a>
+        </div>
+        <div class="code-block">
+<div><span class="comment"># 1. Send a URL → get a screenshot</span></div>
+<div><span class="keyword">curl</span> -X POST http://5.129.253.65:8000/screenshot \</div>
+<div>  -H <span class="string">"Content-Type: application/json"</span> \</div>
+<div>  -d <span class="string">'{"url": "https://example.com", "format": "png", "fullPage": true}'</span></div>
+<div>&nbsp;</div>
+<div><span class="comment"># 2. Batch 1000 URLs → webhook when ready (early access)</span></div>
+<div><span class="keyword">curl</span> -X POST http://5.129.253.65:8000/screenshot \</div>
+<div>  -H <span class="string">"Content-Type: application/json"</span> \</div>
+<div>  -d <span class="string">'{"urls": [...], "webhook": "https://your.app/hook"}'</span></div>
+        </div>
+    </div>
+</section>
+
+<section id="features" class="features">
+    <div class="container">
+        <h2>Why SnapForge?</h2>
+        <p class="sub">The problems we actually solve — not marketing fluff.</p>
+        <div class="grid">
+            <div class="card">
+                <div class="card-icon">🚀</div>
+                <h3>Zero Puppeteer Drama</h3>
+                <p>One Docker container. No 500MB Chrome processes. No memory leaks. No "protocol timeout" at 3 AM.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <h3>Async by Default</h3>
+                <p>Never wait 30s for a sync API call again. Send job, get webhook when done. Progress bar included.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📦</div>
+                <h3>Batch Processing</h3>
+                <p>Upload CSV with 1000 URLs. Get ZIP with screenshots. With retry, dedup, and format conversion.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🏠</div>
+                <h3>Self-Hosted Option</h3>
+                <p>Run on your VPS with one command. GDPR-friendly. Data never leaves your infrastructure.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">📄</div>
+                <h3>Smart PDF Generation</h3>
+                <p>Headers, footers, page numbers, margins. From URL or raw HTML. Better than Chrome's print-to-PDF.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🤖</div>
+                <h3>AI-Agent Ready</h3>
+                <p>OpenAPI spec, SDKs for 6 languages, GitHub Actions. Built so your AI agent can call us natively.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="pricing" class="pricing">
+    <div class="container">
+        <h2>Simple Pricing</h2>
+        <p class="sub">Open source for self-hosters. Hosted for teams who want zero ops.</p>
+        <div class="price-grid">
+            <div class="price-card">
+                <div class="tier">Open Source Core</div>
+                <div class="price">Free <span style="font-size:0.9rem;color:var(--text-muted);font-weight:500">(coming soon)</span></div>
+                <ul>
+                    <li>Self-host on your infrastructure</li>
+                    <li>Core screenshot & PDF engine</li>
+                    <li>Community support</li>
+                    <li>MIT license</li>
+                </ul>
+            </div>
+            <div class="price-card popular">
+                <div class="tier">Hosted — Early Bird</div>
+                <div class="price">$9 <span>/month</span></div>
+                <ul>
+                    <li>10,000 screenshots/mo</li>
+                    <li>5,000 PDFs/mo</li>
+                    <li>Batch processing</li>
+                    <li>Webhooks</li>
+                    <li>Priority support</li>
+                </ul>
+            </div>
+            <div class="price-card">
+                <div class="tier">Scale</div>
+                <div class="price">$39 <span>/month</span></div>
+                <ul>
+                    <li>100,000 screenshots/mo</li>
+                    <li>50,000 PDFs/mo</li>
+                    <li>Custom webhooks</li>
+                    <li>SSO & Teams</li>
+                    <li>SLA guarantee</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="waitlist" class="waitlist">
+    <div class="container">
+        <h2>Join the Waitlist</h2>
+        <p class="sub">Get free early access + 50% off first 3 months. No spam, no newsletter BS.</p>
+        <div class="form-box">
+            <form id="waitlistForm">
+                <input type="email" name="email" placeholder="your@email.com" required>
+                <select name="use_case">
+                    <option value="">What's your use case?</option>
+                    <option value="product_previews">Product previews / thumbnails</option>
+                    <option value="reports">PDF reports / invoices</option>
+                    <option value="testing">Visual testing / regression</option>
+                    <option value="ai_agent">AI agent screenshots</option>
+                    <option value="other">Something else</option>
+                </select>
+                <select name="feature">
+                    <option value="">Most wanted feature?</option>
+                    <option value="self_hosted">Self-hosted option</option>
+                    <option value="batch">Batch processing</option>
+                    <option value="async">Async + webhooks</option>
+                    <option value="pdf">Smart PDF generation</option>
+                    <option value="sdk">SDKs / GitHub Actions</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Get Early Access</button>
+            </form>
+            <div class="success-msg" id="successMsg">✅ You're on the list! Check your inbox soon.</div>
+            <div class="stats">Already <span id="counter">0</span> developers waiting. Join them.</div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <p>SnapForge — built by developers, for developers. <a href="/privacy-policy">Privacy Policy</a></p>
+    </div>
+</footer>
+
+<script>
+document.getElementById('waitlistForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+    try {
+        const res = await fetch('/api/waitlist', { method: 'POST', body: data });
+        const json = await res.json();
+        if (json.success) {
+            form.style.display = 'none';
+            document.getElementById('successMsg').style.display = 'block';
+        } else {
+            alert(json.message || 'Something went wrong');
+        }
+    } catch (err) {
+        alert('Network error. Please try again.');
+    }
+});
+
+fetch('/api/stats').then(r => r.json()).then(s => {
+    document.getElementById('counter').textContent = s.total;
+}).catch(() => {});
+</script>
+
+</body>
+</html>
