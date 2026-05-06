@@ -158,12 +158,12 @@
         </div>
         <div class="code-block">
 <div><span class="comment"># 1. Send a URL → get a screenshot</span></div>
-<div><span class="keyword">curl</span> -X POST http://5.129.253.65:8000/screenshot \</div>
+<div><span class="keyword">curl</span> -X POST https://ministers-just-levy-groups.trycloudflare.com/screenshot \</div>
 <div>  -H <span class="string">"Content-Type: application/json"</span> \</div>
 <div>  -d <span class="string">'{"url": "https://example.com", "format": "png", "fullPage": true}'</span></div>
 <div>&nbsp;</div>
 <div><span class="comment"># 2. Batch 1000 URLs → webhook when ready (early access)</span></div>
-<div><span class="keyword">curl</span> -X POST http://5.129.253.65:8000/screenshot \</div>
+<div><span class="keyword">curl</span> -X POST https://ministers-just-levy-groups.trycloudflare.com/screenshot \</div>
 <div>  -H <span class="string">"Content-Type: application/json"</span> \</div>
 <div>  -d <span class="string">'{"urls": [...], "webhook": "https://your.app/hook"}'</span></div>
         </div>
