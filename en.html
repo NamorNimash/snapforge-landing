@@ -158,15 +158,18 @@
             <a href="#features" class="btn btn-secondary">See Features</a>
         </div>
         <div class="code-block">
-<div><span class="comment"># 1. Send a URL → get a screenshot</span></div>
-<div><span class="keyword">curl</span> -X POST https://ministers-just-levy-groups.trycloudflare.com/screenshot \</div>
-<div>  -H <span class="string">"Content-Type: application/json"</span> \</div>
-<div>  -d <span class="string">'{"url": "https://example.com", "format": "png", "fullPage": true}'</span></div>
+<div><span class="comment"># 1. Send URL → get job ID</span></div>
+<div><span class="keyword">curl</span> -X POST https://ministers-just-levy-groups.trycloudflare.com/screenshot \\</div>
+<div>  -H <span class="string">"Content-Type: application/json"</span> \\</div>
+<div>  -d <span class="string">'{"url": "https://example.com", "format": "png", "full_page": true}'</span></div>
 <div>&nbsp;</div>
-<div><span class="comment"># 2. Batch 1000 URLs → webhook when ready (early access)</span></div>
-<div><span class="keyword">curl</span> -X POST https://ministers-just-levy-groups.trycloudflare.com/screenshot \</div>
-<div>  -H <span class="string">"Content-Type: application/json"</span> \</div>
-<div>  -d <span class="string">'{"urls": [...], "webhook": "https://your.app/hook"}'</span></div>
+<div><span class="comment"># Response: {"id":"abc-123","status":"pending", ...}</span></div>
+<div>&nbsp;</div>
+<div><span class="comment"># 2. Check status</span></div>
+<div><span class="keyword">curl</span> https://ministers-just-levy-groups.trycloudflare.com/jobs/abc-123</div>
+<div>&nbsp;</div>
+<div><span class="comment"># 3. Download file when status = "done"</span></div>
+<div><span class="keyword">curl</span> https://ministers-just-levy-groups.trycloudflare.com/files/abc-123.png</div>
         </div>
     </div>
 </section>
