@@ -293,7 +293,7 @@ document.getElementById('waitlistForm').addEventListener('submit', async (e) => 
     const form = e.target;
     const data = new FormData(form);
     try {
-        const res = await fetch('/api/waitlist', { method: 'POST', body: data });
+        const res = await fetch('https://snapforge.namornimash.workers.dev/api/waitlist', { method: 'POST', body: data });
         const json = await res.json();
         if (json.success) {
             form.style.display = 'none';
@@ -306,7 +306,7 @@ document.getElementById('waitlistForm').addEventListener('submit', async (e) => 
     }
 });
 
-fetch('/api/stats').then(r => r.json()).then(s => {
+fetch('https://snapforge.namornimash.workers.dev/api/stats').then(r => r.json()).then(s => {
     document.getElementById('counter').textContent = s.total;
 }).catch(() => {});
 </script>
