@@ -3,7 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnapForge — Screenshot & PDF API Without the Puppeteer Headaches</title>
+    <script>
+    // Auto-detect language on first visit (unless manually switched before)
+    (function() {
+        const MANUAL = 'snapforge_lang_manual';
+        const saved = localStorage.getItem(MANUAL);
+        if (saved) return; // user already picked manually, respect that
+        const lang = navigator.language || navigator.browserLanguage || 'en';
+        if (!lang.startsWith('en')) {
+            window.location.replace('./index.html');
+        }
+    })();
+    </script>
+    <title>SnapForge — Screenshot & PDF API for Developers</title>
     <meta name="description" content="Self-hosted screenshot and PDF generation API. No Puppeteer, no headless Chrome drama. Batch processing, webhooks, and beautiful docs.">
     <style>
     @font-face { font-family: 'Inter'; src: local('Inter'), local('Arial'); }
@@ -143,7 +155,7 @@
             <a href="#features">Features</a>
             <a href="#pricing">Pricing</a>
             <a href="#waitlist">Waitlist</a>
-            <a href="./index.html" class="lang-switch">RU</a>
+            <a href="./index.html" class="lang-switch" onclick="localStorage.setItem('snapforge_lang_manual','1')">RU</a>
         </div>
     </div>
 </nav>

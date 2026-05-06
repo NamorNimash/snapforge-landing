@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+    // Auto-detect language on first visit (unless manually switched before)
+    (function() {
+        const MANUAL = 'snapforge_lang_manual';
+        const saved = localStorage.getItem(MANUAL);
+        if (saved) return; // user already picked manually, respect that
+        const lang = navigator.language || navigator.browserLanguage || 'ru';
+        if (lang.startsWith('en')) {
+            window.location.replace('./en.html');
+        }
+    })();
+    </script>
     <title>SnapForge — API скриншотов и PDF без боли</title>
     <meta name="description" content="Self-hosted API для скриншотов и PDF. Без Puppeteer, без утечек памяти. Пакетная обработка, вебхуки, красивая документация.">
     <style>
@@ -143,7 +155,7 @@
             <a href="#features">Возможности</a>
             <a href="#pricing">Цены</a>
             <a href="#waitlist">Ранний доступ</a>
-            <a href="./en.html" class="lang-switch">EN</a>
+            <a href="./en.html" class="lang-switch" onclick="localStorage.setItem('snapforge_lang_manual','1')">EN</a>
         </div>
     </div>
 </nav>
